@@ -6,7 +6,6 @@ import cv2
 import os
 import torch
 
-from transforms3d.quaternions import mat2quat, quat2mat, qmult
 from scipy.spatial.transform import Rotation as R
 
 os.environ['PYOPENGL_PLATFORM'] = 'egl'
@@ -146,7 +145,7 @@ class Renderer:
         if not self.synthetic:
             rotation = quaternion2rotation(rotation_quat)
         else:
-            rotation = quat2mat(rotation_quat)
+            rotation = R.from_quat(rotation_quat).as_matrix()
             rotation = rotation @ R.from_euler('x', 90, degrees=True).as_matrix()
 
         transform = to_homo(rotation, translation)
@@ -196,7 +195,7 @@ class Renderer:
             pose = poses[num][0]
             translation = np.array(pose['cam_t_m2c'])
             rotation = np.array(pose['cam_R_m2c']).reshape((3, 3))
-            rotation = mat2quat(rotation)
+            rotation = R.from_mat(rotation).as_matrix()
             
 
         return img, translation, rotation
@@ -228,8 +227,8 @@ if __name__ == '__main__':
     x, y, z = translation
     dx, dy, dz = 0, 0, 0
     while True:
-        rotation = quat2mat(rotation) @ R.from_euler('xyz', [dx, dy, dz], degrees=True).as_matrix()
-        rotation = mat2quat(rotation)
+        rotation = R.from_quat(rotation).as_matrix() @ R.from_euler('xyz', [dx, dy, dz], degrees=True).as_matrix()
+        rotation = R.from_matrix(rotation).as_quat()
         a, b, c, d = rotation
         pose = [a, b, c, d, x, y, z]
         r.set_pose(pose)
