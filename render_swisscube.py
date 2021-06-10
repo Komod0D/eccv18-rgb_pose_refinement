@@ -157,6 +157,8 @@ class Renderer:
         color = cv2.resize(color, (640, 640), cv2.INTER_AREA)
         color = color[80:560]
         
+        depth = cv2.resize(depth, (640, 640), cv2.INTER_AREA)
+        depth = depth[80:560]
         return np.flip(color, (0, 1)).copy(), np.flip(depth, (0, 1)).copy()
 
     def render(self, image_tensor):
@@ -231,9 +233,10 @@ if __name__ == '__main__':
         a, b, c, d = rotation
         pose = [a, b, c, d, x, y, z]
         r.set_pose(pose)
-        color = r.render_()
-
+        color, depth = r.render_()
+        print(depth.max())
         cv2.imshow('render', color)
+        cv2.imshow('depth', depth)
         key = cv2.waitKey(0)
         if key == 27:
             break
